@@ -28,9 +28,9 @@ var updateActor = (body) => {
 		db.serialize(function () {
 			try {	
 				db.run(`
-				UPDATE actors SET login=${body.login}, 
-				avatar_url=${body.avatar_url} 
-				where id=${body.id}`)
+				UPDATE actor SET login=$login, 
+				avatar_url=$url
+				where id=$id`,[body.login,body.avatar_url,body.id])
 
 				return resolve([])
 			} catch (error) {
