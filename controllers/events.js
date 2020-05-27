@@ -19,7 +19,7 @@ var getAllEvents = () => {
 				const event = await resolver(
 					`SELECT 
 					e.id as id, e.type as type,e.created_at as created_at, 
-					a.id as actionid, a.login as actionlogin, a.avatar_url as actionurl,
+					a.id as actorid, a.login as actorlogin, a.avatar_url as actorurl,
 					r.id as repoid, r.name as reponame, r.url as repourl
 					FROM events  e
 					INNER JOIN actor a
@@ -33,19 +33,19 @@ var getAllEvents = () => {
 				}
 
 				const allEvents = event.map(events => ({
-					id: id,
-					type: type,
+					id: events.id,
+					type: events.type,
 					actor: {
-						id: actionid,
-						login: actionlogin,
-						avatar_url: actionurl
+						id: event.actorid,
+						login: event.actorlogin,
+						avatar_url: event.actorurl
 					},
 					repo: {
-						id: repoid,
-						name: reponame,
-						url: repourl
+						id: event.repoid,
+						name: event.reponame,
+						url: event.repourl
 					},
-					created_at: created_at
+					created_at: event.created_at
 				}))
 
 				return resolve(allEvents)
