@@ -1,17 +1,17 @@
 const sqlite = require('sqlite3').verbose()
-const db = new sqlite.Database(':memory:');
+const db = new sqlite.Database('events');
 
 db.serialize( function () {
     //create table here for the events
-    db.run(`CREATE TABLE  IF NOT EXIST events (
+    db.run(`CREATE TABLE  IF NOT EXISTS events (
         id INTEGER NOT NULL,
         type VARCHAR NOT NULL,
-        CREATED_AT VARCHAR NOT NULL
+        created_at VARCHAR NOT NULL
     )`)
 
-    db.run(`CREATE TABLE  IF NOT EXIST actor (
+    db.run(`CREATE TABLE  IF NOT EXISTS actor (
         id INTEGER NOT NULL,
-        eventid INTEGER NOT NULL
+        eventid INTEGER NOT NULL,
         login VARCHAR NOT NULL,
         avatar_url VARCHAR NOT NULL,
 
@@ -22,9 +22,9 @@ db.serialize( function () {
     )`)
 
 
-    db.run(`CREATE TABLE  IF NOT EXIST repo (
+    db.run(`CREATE TABLE  IF NOT EXISTS repo (
         id INTEGER NOT NULL,
-        eventid INTEGER NOT NULL
+        eventid INTEGER NOT NULL,
         name VARCHAR NOT NULL,
         url VARCHAR NOT NULL, 
 
@@ -37,6 +37,6 @@ db.serialize( function () {
 
 })
 
-db.close();
+// db.close();
 
 module.exports = db
