@@ -9,10 +9,10 @@ router.get('/', async (req, res) => {
     res.status(200).json(get_db)
 })
 
-router.get('/actors/:id', (req, res) => {
+router.get('/actors/:id', async (req, res) => {
     const actorId = req.params['id']
-    const actor = getByActor(actorId)
-    if (actor) {
+    const actor = await getByActor(actorId)
+    if (actor){
         return res.status(200).json(actor)
     }
     return res.status(404).json({error:"request not found"})

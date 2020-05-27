@@ -65,9 +65,10 @@ var addEvent = (body) => {
 		try {
 			
 			const eventInsert = db.prepare(`
-			INSERT INTO events VALUES($id,$type,$created_at)
-			`)
-				eventInsert.run(
+			INSERT INTO events 
+			VALUES($id,$type,$created_at)`)
+
+			eventInsert.run(
 				body.id,
 				body.type,
 				body.created_at,
@@ -75,10 +76,11 @@ var addEvent = (body) => {
 			eventInsert.finalize();
 	
 			const actorInsert = db.prepare(`
-			INSERT INTO actor VALUES($id,$eid,$login,$url)
+			INSERT INTO actor 
+			VALUES($id,$eid,$login,$url)
 			`)
-			console.log(actorInsert)
-				actorInsert.run(
+
+			actorInsert.run(
 				body.actor.id,
 				body.id,
 				body.actor.login,
@@ -87,8 +89,10 @@ var addEvent = (body) => {
 			actorInsert.finalize()
 	
 			const repoInsert = db.prepare(`
-			INSERT INTO repo VALUES($id,$eid,$name,$url)
+			INSERT INTO repo 
+			VALUES($id,$eid,$name,$url)
 			`)
+
 			repoInsert.run(
 				body.repo.id,
 				body.id,
@@ -103,8 +107,49 @@ var addEvent = (body) => {
 };
 
 
-var getByActor = () => {
-
+var getByActor = (id) => {
+	console.log(id)
+	return new Promise((resolve, reject) => {
+		db.serialize(async function(){
+			try{const events = await resolver(
+					`SELECT 
+					e.id as id, e.type as type,e.created_at as created_at, 
+					a.id as actorid, a.login as actorlogin, a.avatar_url as actorurl,
+					r.id as repoid, r.name as reponame, r.url as repourl
+					FROM events  e
+					INNER JOIN actor a
+					ON a.eventid = e.id
+					INNER JOIN repo r
+					ON r.eventid = a.eventid
+					WHERE e.id=${id}
+					`)
+			console.log("event",events)
+			if (events.error) {
+				return reject({error:events.error.message})
+			}
+			const actor = events.map(event=>({
+					id: event.id,
+					type: event.type,
+					actor: {
+						id: event.actorid,
+						login: event.actorlogin,
+						avatar_url: event.actorurl
+					},
+					repo: {
+						id: event.repoid,
+						name: event.reponame,
+						url: event.repourl
+					},
+					created_at: event.created_at
+			}))
+			console.log("thisis actor", actor)
+			return resolve(actor)
+			} catch (e) {
+				console.log(e.message)
+				return reject({error:"sorry couldnt find actor"})
+			}
+		})
+	})
 };
 
 
