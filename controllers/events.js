@@ -36,16 +36,16 @@ var getAllEvents = () => {
 					id: events.id,
 					type: events.type,
 					actor: {
-						id: event.actorid,
-						login: event.actorlogin,
-						avatar_url: event.actorurl
+						id: events.actorid,
+						login: events.actorlogin,
+						avatar_url: events.actorurl
 					},
 					repo: {
-						id: event.repoid,
-						name: event.reponame,
-						url: event.repourl
+						id: events.repoid,
+						name: events.reponame,
+						url: events.repourl
 					},
-					created_at: event.created_at
+					created_at: events.created_at
 				}))
 
 				return resolve(allEvents)
