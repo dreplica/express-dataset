@@ -5,6 +5,7 @@ var router = express.Router();
 // Routes related to event
 router.get('/', async (req, res) => {
     const get_db = await getAllEvents();
+    console.log("this is get_db",get_db)
     res.status(200).json(get_db)
 })
 
@@ -18,10 +19,10 @@ router.get('/actors/:id', (req, res) => {
 })
 
 router.post('/', (req, res) => {
-    const eventBody = req.body
+    console.log(req.body)
     const response = addEvent(req.body)
     console.log(response)
-    res.status(200).json(response)
+    return res.status(200).json(response)
 })
 
 

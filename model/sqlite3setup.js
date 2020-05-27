@@ -1,5 +1,5 @@
 const sqlite = require('sqlite3').verbose()
-const db = new sqlite.Database('events');
+const db = new sqlite.Database(':memory:');
 
 db.serialize( function () {
     //create table here for the events
