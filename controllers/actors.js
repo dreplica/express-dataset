@@ -27,7 +27,11 @@ var updateActor = (body) => {
 	return new Promise((resolve, reject) => {
 		db.serialize(function () {
 			try {	
-				db.run(`UPDATE actors SET login=${body.login}, avatar_url=${body.avatar_url} where id=${body.id}`)
+				db.run(`
+				UPDATE actors SET login=${body.login}, 
+				avatar_url=${body.avatar_url} 
+				where id=${body.id}`)
+
 				return resolve([])
 			} catch (error) {
 				return reject({error:"actor not found"})
@@ -37,10 +41,11 @@ var updateActor = (body) => {
 };
 
 
-var getStreak = () => {
+var getStreak = async () => {
 	try {
 		const actors = await resolver(`
-		SELECT e.id as eventid,a.id as id, a.login as login, a.avatar_url as avatar_url
+		SELECT e.id as eventid,a.id as id, a.login as login, 
+		a.avatar_url as avatar_url
 		FROM actor a
 		INNER JOIN events e
 		ON a.eventId=e.id`)

@@ -1,4 +1,5 @@
 const db = require('../model/sqlite3setup')
+const { resolve } = require('bluebird')
 
 const resolver = (check, error = 'not available') => new Promise((resolve, reject) => {
 	db.all(check, (err, row) => {
@@ -156,7 +157,8 @@ var getByActor = (id) => {
 var eraseEvents = () => {
 	db.serialize(async function () {
 		const erase = await resolver(`DELETE FROM  events`)
-		console.log(erase)
+		const test = await resolver('SELECT * FROM actor')
+		console.log(test)
 	})
 };
 
