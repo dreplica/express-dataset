@@ -154,7 +154,10 @@ var getByActor = (id) => {
 
 
 var eraseEvents = () => {
-
+	db.serialize(async function () {
+		const erase = await resolver(`DELETE FROM  events`)
+		console.log(erase)
+	})
 };
 
 module.exports = {
