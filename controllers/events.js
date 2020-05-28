@@ -77,31 +77,30 @@ var addEvent = (body) => {
 					return reject({ error: 'event already exist', code: 400 });
 				}
 
-				await db.each(`INSERT INTO events VALUES(NULL,$id,$type,$created_at)`, [
+				db.each(`INSERT INTO events VALUES(NULL,$id,$type,$created_at)`, [
 					Number(body.id),
 					body.type,
 					body.created_at
 				]);
 
-				const last_id_gotten = await resolver(`SELECT last_insert_rowid() FROM events`);
+				resolver(`SELECT last_insert_rowid() FROM events`).then((res) => {
+					console.log(res);
+					db.each(`INSERT INTO actor VALUES(NULL,$id,$eid,$login,$url)`, [
+						Number(body.actor.id),
+						Number(res[0]['last_insert_rowid()']),
+						body.actor.login,
+						body.actor.avatar_url
+					]);
 
-				const last_id = await last_id_gotten[0]['last_insert_rowid()'];
+					db.each(`INSERT INTO repo VALUES(NULL,$id,$eid,$name,$url)`, [
+						Number(body.repo.id),
+						Number('last_insert_rowid()'),
+						body.repo.name,
+						body.repo.url
+					]);
 
-				await db.each(`INSERT INTO actor VALUES(NULL,$id,$eid,$login,$url)`, [
-					Number(body.actor.id),
-					Number(last_id),
-					body.actor.login,
-					body.actor.avatar_url
-				]);
-
-				await db.each(`INSERT INTO repo VALUES(NULL,$id,$eid,$name,$url)`, [
-					Number(body.repo.id),
-					Number(last_id),
-					body.repo.name,
-					body.repo.url
-				]);
-
-				return resolve({ message: 'inserted', code: 201 });
+					return resolve({ message: 'inserted', code: 201 });
+				});
 			} catch (error) {
 				console.log('error happened', error.message);
 			}
