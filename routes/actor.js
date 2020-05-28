@@ -12,7 +12,7 @@ router.put('/', (req, res) => {
 	updateActor(req.body)
 		.then((actor) => {
 			res.statusCode = 200;
-			res.status(200).json([]);
+			res.status(200).json({});
 		})
 		.catch(({ error, code }) => {
 			res.statusCode = code;

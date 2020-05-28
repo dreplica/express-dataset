@@ -83,7 +83,7 @@ var addEvent = (body) => {
 					body.created_at
 				]);
 
-				resolver(`SELECT last_insert_rowid() FROM events`).then((res) => {
+				await resolver(`SELECT last_insert_rowid() FROM events`).then((res) => {
 					console.log(res);
 					db.each(`INSERT INTO actor VALUES(NULL,$id,$eid,$login,$url)`, [
 						Number(body.actor.id),
@@ -94,7 +94,7 @@ var addEvent = (body) => {
 
 					db.each(`INSERT INTO repo VALUES(NULL,$id,$eid,$name,$url)`, [
 						Number(body.repo.id),
-						Number('last_insert_rowid()'),
+						Number(res[0]['last_insert_rowid()']),
 						body.repo.name,
 						body.repo.url
 					]);

@@ -11,11 +11,54 @@ const resolver = (check, data = [], error = 'not available') =>
 		});
 	});
 
+const sorting = (arr) => {
+	return [ ...arr ].sort((a, b) => {
+		if (b.id - a.id === 0) {
+			console.log('same id');
+			if (Date.now(b.created_at) - Date.now(a.created_at) === 0) {
+				console.log('same date');
+				if (b.actor.login - a.actor.login > 0) return -1;
+				else return 1;
+			} else if (Date.now(b.created_at) - Date.now(a.created_at) > 0) return 1;
+			else return -1;
+		} else if (b.id - a.id > 0) return 1;
+		else return -1;
+	});
+};
+
 var getAllActors = async () => {
 	try {
-		const actors = await resolver(`SELECT id,login,avatar_url FROM actor`);
+		const actors = await resolver(`
+		SELECT 
+		e.id, e.type,e.created_at, 
+		a.id,a.login,a.avatar_url,
+		r.id,r.name,r.url
+		COUNT(login) 
+		FROM actor a
+		JOIN events e
+		ON e._id = a.eventid
+		JOIN repo r
+		ON r.id = e._id
+		GROUP BY login `);
+
 		console.log(actors);
-		return actors;
+		// const allActors = actors.map((events) => ({
+		// 	id: events.id,
+		// 	type: events.type,
+		// 	actor: {
+		// 		id: events.actorid,
+		// 		login: events.actorlogin,
+		// 		avatar_url: events.actorurl
+		// 	},
+		// 	created_at: events.created_at
+		// }));
+
+		// const sortedActors = sorting(allActors);
+		// console.log(sortedActors);
+		// const getActors = sortedActors.map((actor) => actor.actor);
+
+		// console.log(getActors);
+		// return getActors;
 	} catch (error) {
 		return { error: 'couldnt access data' };
 	}
@@ -31,17 +74,14 @@ var updateActor = (body) => {
 					return reject({ error: 'not found', code: 404 });
 				}
 
-				resolver(
-					`
-				UPDATE actor SET login=$login, 
-				avatar_url=$url
-				where id=$id`,
-					[ body.login, body.avatar_url, body.id ]
-				);
-				console.log('this is update', await update);
+				resolver(`UPDATE actor SET login=$login, avatar_url=$url where id=$id`, [
+					body.login,
+					body.avatar_url,
+					body.id
+				]);
 				return resolve([]);
 			} catch (error) {
-				return reject({ error: 'actor not found', code: 400 });
+				return reject({ error: 'actor is being updated', code: 400 });
 			}
 		});
 	});
