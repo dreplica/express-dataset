@@ -3,8 +3,9 @@ const { getAllActors, updateActor } = require('../controllers/actors');
 var router = express.Router();
 
 // Routes related to actor.
-router.get('/', (req, res) => {
-	const result = getAllActors();
+router.get('/', async (req, res) => {
+	const result = await getAllActors();
+	console.log(result);
 	return res.status(200).json(result);
 });
 

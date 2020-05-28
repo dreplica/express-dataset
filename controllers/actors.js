@@ -13,7 +13,7 @@ const resolver = (check, data = [], error = 'not available') =>
 
 const sorting = (arr) => {
 	return [ ...arr ].sort((a, b) => {
-		if (b.id - a.id === 0) {
+		if (b.count - a.count === 0) {
 			console.log('same id');
 			if (Date.now(b.created_at) - Date.now(a.created_at) === 0) {
 				console.log('same date');
@@ -31,34 +31,38 @@ var getAllActors = async () => {
 		const actors = await resolver(`
 		SELECT 
 		e.id, e.type,e.created_at, 
-		a.id,a.login,a.avatar_url,
-		r.id,r.name,r.url
-		COUNT(login) 
+		a.id as actorid,a.login,a.avatar_url,
+		r.id as repoid,r.name,r.url,
+		COUNT(login) as count
 		FROM actor a
 		JOIN events e
 		ON e._id = a.eventid
 		JOIN repo r
-		ON r.id = e._id
-		GROUP BY login `);
+		ON r.eventid = e._id
+		GROUP BY a.login `);
 
-		console.log(actors);
-		// const allActors = actors.map((events) => ({
-		// 	id: events.id,
-		// 	type: events.type,
-		// 	actor: {
-		// 		id: events.actorid,
-		// 		login: events.actorlogin,
-		// 		avatar_url: events.actorurl
-		// 	},
-		// 	created_at: events.created_at
-		// }));
+		// console.log(actors);
+		const allActors = actors.map((events) => ({
+			id: events.id,
+			count: events.count,
+			type: events.type,
+			actor: {
+				id: events.actorid,
+				login: events.login,
+				avatar_url: events.avatar_url
+			},
+			repo: {
+				id: events.repoid,
+				name: events.name,
+				url: events.url
+			},
+			created_at: events.created_at
+		}));
 
-		// const sortedActors = sorting(allActors);
-		// console.log(sortedActors);
-		// const getActors = sortedActors.map((actor) => actor.actor);
-
-		// console.log(getActors);
-		// return getActors;
+		// console.log(allActors);
+		const sortedActors = sorting(allActors);
+		// console.log('sorted', sortedActors);
+		return [...sortedActors.map((actor) => actor.actor)];
 	} catch (error) {
 		return { error: 'couldnt access data' };
 	}

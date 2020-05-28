@@ -4,8 +4,12 @@ var router = express.Router();
 
 // Route related to delete events
 router.delete("/", (req, res) => {
-    const erase = eraseEvents();
-    return res.status(200).json(erase)
+    try {
+        eraseEvents();
+        return res.status(200).json({})  
+    } catch (error) {
+        return res
+    }
 })
 
 
