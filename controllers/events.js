@@ -128,7 +128,10 @@ var getByActor = (id) => {
 				if (events.error) {
 					return reject({ error: events.error.message });
 				}
-				const actor = events.map((event) => ({
+
+				const sorted = [ ...events ].sort((a, b) => a.id - b.id);
+
+				const actor = sorted.map((event) => ({
 					id: event.id,
 					type: event.type,
 					actor: {
