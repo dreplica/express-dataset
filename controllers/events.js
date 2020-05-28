@@ -2,6 +2,7 @@ const db = require('../model/sqlite3setup');
 
 const resolver = (check, error = 'not available') =>
 	new Promise((resolve, reject) => {
+		console.log(check);
 		db.all(check, (err, row) => {
 			if (err) {
 				console.log(err);
@@ -14,7 +15,6 @@ const resolver = (check, error = 'not available') =>
 var getAllEvents = () => {
 	return new Promise((resolve, reject) => {
 		db.serialize(async function() {
-			// let j;
 			try {
 				const event = await resolver(
 					`SELECT 
@@ -27,7 +27,6 @@ var getAllEvents = () => {
 					INNER JOIN repo r
 					ON r.eventid = a.eventid`
 				);
-				console.log(event);
 
 				if (event.error) {
 					return reject({ error: event.error.message });
@@ -53,7 +52,6 @@ var getAllEvents = () => {
 
 				return resolve(allEvents);
 			} catch (error) {
-				console.log(error.mesage);
 				return reject({ error: error.message });
 			}
 		});
@@ -68,7 +66,6 @@ var addEvent = (body) => {
 					new Promise((resolve, reject) => {
 						db.get(`SELECT * FROM events WHERE id=$id`, [ body.id ], (err, row) => {
 							if (err) {
-								console.log(err);
 								return reject({ error: 'not available', code: 404 });
 							}
 							return resolve(row);
@@ -77,7 +74,7 @@ var addEvent = (body) => {
 
 				const checkResult = await check();
 				if (checkResult) {
-					return reject({ error: 'exist', code: 404 });
+					return reject({ error: 'event already exist', code: 404 });
 				}
 
 				db.each(`INSERT INTO events VALUES(NULL,$id,$type,$created_at)`, [
@@ -86,7 +83,6 @@ var addEvent = (body) => {
 					body.created_at
 				]);
 
-				//i stopped here, i need the id from here to use as foreign key.
 				const last_id_gotten = await resolver(`SELECT last_insert_rowid() FROM events`);
 
 				const last_id = last_id_gotten[0]['last_insert_rowid()'];
@@ -123,13 +119,12 @@ var getByActor = (id) => {
 					e.id as id, e.type as type,e.created_at as created_at, 
 					a.id as actorid, a.login as actorlogin, a.avatar_url as actorurl,
 					r.id as repoid, r.name as reponame, r.url as repourl
-					FROM events  e
-					INNER JOIN actor a
-					ON a.eventid = e.id
+					FROM actor a
+					INNER JOIN events e
+					ON a.eventid = e._id
 					INNER JOIN repo r
 					ON r.eventid = a.eventid
-					WHERE e.id=${id}
-					`
+					WHERE a.id =${id}`
 				);
 				console.log('event', events);
 				if (events.error) {
