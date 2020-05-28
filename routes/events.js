@@ -20,9 +20,9 @@ router.get('/actors/:id', async (req, res) => {
 
 router.post('/', (req, res) => {
     console.log(req.body)
-    const response = addEvent(req.body)
-    console.log(response)
-    return res.status(200).json(response)
+      addEvent(req.body)
+        .then(({ message, code }) => res.status(code).send(message))
+    .catch(({error,code})=>res.status(code).send(error))
 })
 
 

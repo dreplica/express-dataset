@@ -33,7 +33,9 @@ var getAllEvents = () => {
 					return reject({ error: event.error.message })
 				}
 
-				const allEvents = event.map(events => ({
+				const sortedEvents = [...event].sort((a,b)=>a.id-b.id)
+
+				const allEvents = sortedEvents.map(events => ({
 					id: events.id,
 					type: events.type,
 					actor: {
@@ -61,49 +63,66 @@ var getAllEvents = () => {
 };
 
 var addEvent = (body) => {
-	console.log("body started")
-	db.serialize(function () {
-		try {
-			
-			const eventInsert = db.prepare(`
+	return new Promise((resolve, reject) => {
+		db.serialize(async function () {
+			try {
+				// const check = () => new Promise((resolve, reject) => {
+				// 	db.run(`SELECT id FROM events WHERE id=$id`, [body.id], (err, row) => {
+				// 		if (row) {
+				// 			return resolve(true)
+				// 		}
+				// 		return resolve(false)
+				// 	})
+				// })
+
+				// if (await check()) {
+				// 	return reject({error:"exist",code:404})
+				// }
+
+				const eventInsert = db.prepare(`
 			INSERT INTO events 
 			VALUES($id,$type,$created_at)`)
 
-			eventInsert.run(
-				body.id,
-				body.type,
-				body.created_at,
-			)
-			eventInsert.finalize();
-	
-			const actorInsert = db.prepare(`
+				eventInsert.run(
+					body.id,
+					body.type,
+					body.created_at,
+				)
+				eventInsert.finalize();
+
+				const actorInsert = db.prepare(`
 			INSERT INTO actor 
 			VALUES($id,$eid,$login,$url)
 			`)
 
-			actorInsert.run(
-				body.actor.id,
-				body.id,
-				body.actor.login,
-			    body.actor.avatar_url
-			)
-			actorInsert.finalize()
-	
-			const repoInsert = db.prepare(`
+				actorInsert.run(
+					body.actor.id,
+					body.id,
+					body.actor.login,
+					body.actor.avatar_url
+				)
+				actorInsert.finalize()
+
+				const repoInsert = db.prepare(`
 			INSERT INTO repo 
 			VALUES($id,$eid,$name,$url)
 			`)
 
-			repoInsert.run(
-				body.repo.id,
-				body.id,
-				body.repo.name,
-				body.repo.url
-			)
-			repoInsert.finalize()
-		} catch (error) {
-			console.log("error happened",error.message)
-		}
+				repoInsert.run(
+					body.repo.id,
+					body.id,
+					body.repo.name,
+					body.repo.url
+				)
+				repoInsert.finalize()
+
+				return resolve({ message: "inserted", code: 201 })
+
+			} catch (error) {
+				console.log("error happened", error.message)
+
+			}
+		})
 	})
 };
 
@@ -111,8 +130,9 @@ var addEvent = (body) => {
 var getByActor = (id) => {
 	console.log(id)
 	return new Promise((resolve, reject) => {
-		db.serialize(async function(){
-			try{const events = await resolver(
+		db.serialize(async function () {
+			try {
+				const events = await resolver(
 					`SELECT 
 					e.id as id, e.type as type,e.created_at as created_at, 
 					a.id as actorid, a.login as actorlogin, a.avatar_url as actorurl,
@@ -124,11 +144,11 @@ var getByActor = (id) => {
 					ON r.eventid = a.eventid
 					WHERE e.id=${id}
 					`)
-			console.log("event",events)
-			if (events.error) {
-				return reject({error:events.error.message})
-			}
-			const actor = events.map(event=>({
+				console.log("event", events)
+				if (events.error) {
+					return reject({ error: events.error.message })
+				}
+				const actor = events.map(event => ({
 					id: event.id,
 					type: event.type,
 					actor: {
@@ -142,12 +162,12 @@ var getByActor = (id) => {
 						url: event.repourl
 					},
 					created_at: event.created_at
-			}))
-			console.log("thisis actor", actor)
-			return resolve(actor)
+				}))
+				console.log("thisis actor", actor)
+				return resolve(actor)
 			} catch (e) {
 				console.log(e.message)
-				return reject({error:"sorry couldnt find actor"})
+				return reject({ error: "sorry couldnt find actor" })
 			}
 		})
 	})
