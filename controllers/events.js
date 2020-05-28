@@ -77,7 +77,7 @@ var addEvent = (body) => {
 					return reject({ error: 'event already exist', code: 400 });
 				}
 
-				db.each(`INSERT INTO events VALUES(NULL,$id,$type,$created_at)`, [
+				await db.each(`INSERT INTO events VALUES(NULL,$id,$type,$created_at)`, [
 					Number(body.id),
 					body.type,
 					body.created_at
@@ -85,16 +85,16 @@ var addEvent = (body) => {
 
 				const last_id_gotten = await resolver(`SELECT last_insert_rowid() FROM events`);
 
-				const last_id = last_id_gotten[0]['last_insert_rowid()'];
+				const last_id = await last_id_gotten[0]['last_insert_rowid()'];
 
-				db.each(`INSERT INTO actor VALUES(NULL,$id,$eid,$login,$url)`, [
+				await db.each(`INSERT INTO actor VALUES(NULL,$id,$eid,$login,$url)`, [
 					Number(body.actor.id),
 					Number(last_id),
 					body.actor.login,
 					body.actor.avatar_url
 				]);
 
-				db.each(`INSERT INTO repo VALUES(NULL,$id,$eid,$name,$url)`, [
+				await db.each(`INSERT INTO repo VALUES(NULL,$id,$eid,$name,$url)`, [
 					Number(body.repo.id),
 					Number(last_id),
 					body.repo.name,
