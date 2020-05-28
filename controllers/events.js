@@ -1,5 +1,4 @@
 const db = require('../model/sqlite3setup');
-const { resolve } = require('bluebird');
 
 const resolver = (check, error = 'not available') =>
 	new Promise((resolve, reject) => {
@@ -65,11 +64,21 @@ var addEvent = (body) => {
 	return new Promise((resolve, reject) => {
 		db.serialize(async function() {
 			try {
-				const check = await resolver(`SELECT id FROM events WHERE id=$id`, [ body.id ]);
-				console.log('this is check', check);
-				// if (await check()) {
-				// 	return reject({error:"exist",code:404})
-				// }
+				const check = () =>
+					new Promise((resolve, reject) => {
+						db.get(`SELECT * FROM events WHERE id=$id`, [ body.id ], (err, row) => {
+							if (err) {
+								console.log(err);
+								return reject({ error: 'not available', code: 404 });
+							}
+							return resolve(row);
+						});
+					});
+
+				const checkResult = await check();
+				if (checkResult) {
+					return reject({ error: 'exist', code: 404 });
+				}
 
 				db.each(`INSERT INTO events VALUES(NULL,$id,$type,$created_at)`, [
 					body.id,
