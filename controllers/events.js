@@ -66,7 +66,7 @@ var addEvent = (body) => {
 					new Promise((resolve, reject) => {
 						db.get(`SELECT * FROM events WHERE id=$id`, [ body.id ], (err, row) => {
 							if (err) {
-								return reject({ error: 'not available', code: 404 });
+								return reject({ error: 'not available', code: 400 });
 							}
 							return resolve(row);
 						});
@@ -74,7 +74,7 @@ var addEvent = (body) => {
 
 				const checkResult = await check();
 				if (checkResult) {
-					return reject({ error: 'event already exist', code: 404 });
+					return reject({ error: 'event already exist', code: 400 });
 				}
 
 				db.each(`INSERT INTO events VALUES(NULL,$id,$type,$created_at)`, [
@@ -110,7 +110,6 @@ var addEvent = (body) => {
 };
 
 var getByActor = (id) => {
-	console.log(id);
 	return new Promise((resolve, reject) => {
 		db.serialize(async function() {
 			try {
@@ -126,7 +125,6 @@ var getByActor = (id) => {
 					ON r.eventid = a.eventid
 					WHERE a.id =${id}`
 				);
-				console.log('event', events);
 				if (events.error) {
 					return reject({ error: events.error.message });
 				}
@@ -145,7 +143,6 @@ var getByActor = (id) => {
 					},
 					created_at: event.created_at
 				}));
-				console.log('thisis actor', actor);
 				return resolve(actor);
 			} catch (e) {
 				console.log(e.message);
