@@ -4,7 +4,6 @@ const resolver = (check, data = [], error = 'not available') =>
 	new Promise((resolve, reject) => {
 		db.all(check, data, (err, row) => {
 			if (err) {
-				console.log(err);
 				return reject({ error: error });
 			}
 			return resolve(row);
@@ -21,7 +20,6 @@ const getStreakDistro = (arr) => {
 	const uniqueLogin = [ ...uniqueId ];
 	const stopper = arr.length - 1;
 
-	//i stopped here, i was trying to get the count and latest date to work
 	const datePack = uniqueLogin.map((login) =>
 		arr.reduce(
 			(acc, val, index) => {
@@ -34,7 +32,6 @@ const getStreakDistro = (arr) => {
 				}
 
 				if (acc.count > 10000000000 && index === stopper) {
-					('hello');
 					acc.count = 1;
 				}
 
@@ -57,9 +54,7 @@ const getStreakDistro = (arr) => {
 const sorting = (arr) => {
 	return [ ...arr ].sort((a, b) => {
 		if (b.count - a.count === 0) {
-			console.log('same count');
 			if (new Date(b.created_at).getTime() - new Date(a.created_at).getTime() === 0) {
-				console.log('same date');
 				if (b.actor.login - a.actor.login > 0) return -1;
 				else return 1;
 			} else if (new Date(b.created_at).getTime() - new Date(a.created_at).getTime() > 0) return 1;
@@ -128,10 +123,8 @@ var getStreak = async () => {
 		FROM actor a
 		JOIN events e
 		ON e._id = a.eventid`);
-		console.log('data', datr);
 
 		const unique = getStreakDistro(datr);
-		console.log('this is unique', unique);
 		return sorting(unique).map((act) => act.actor);
 	} catch (error) {
 		console.log(error);
