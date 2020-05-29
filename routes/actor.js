@@ -10,8 +10,13 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/streak', async (req, res) => {
-	const result = await getStreak();
-	return res.status(200).json(result);
+	try {
+		const result = await getStreak();
+		return res.status(200).json(result);
+	} catch (error) {
+		console.log(error);
+		return;
+	}
 });
 
 router.put('/', (req, res) => {

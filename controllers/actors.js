@@ -13,7 +13,6 @@ const resolver = (check, data = [], error = 'not available') =>
 
 const getStreakDistro = (arr) => {
 	const calculateDate = (dateA, dateB) => {
-		console.log(dateA, dateB);
 		if (dateA > dateB) return dateA - dateB;
 		return dateB - dateA;
 	};
@@ -40,22 +39,18 @@ const getStreakDistro = (arr) => {
 				}
 
 				if (val.login === login && !acc.count) {
-					console.log('val date', val.created_at);
 					acc.count = index === stopper ? 1 : new Date(val.created_at).getTime();
 					acc.actor.id = val.id;
 					acc.actor.login = login;
 					acc.actor.avatar_url = val.avatar_url;
 					acc.created_at = val.created_at;
-					console.log('count', acc.count);
 					return acc;
 				}
-
 				return acc;
 			},
 			{ count: 0, actor: { id: 0, login: '', avatar_url: '' }, created_at: '' }
 		)
 	);
-
 	return datePack;
 };
 
@@ -67,8 +62,8 @@ const sorting = (arr) => {
 				console.log('same date');
 				if (b.actor.login - a.actor.login > 0) return -1;
 				else return 1;
-			} else if (Date.now(b.created_at) - Date.now(a.created_at) > 0) return -1;
-			else return 1;
+			} else if (new Date(b.created_at).getTime() - new Date(a.created_at).getTime() > 0) return 1;
+			else return -1;
 		} else if (b.count - a.count > 0) return 1;
 		else return -1;
 	});
@@ -86,7 +81,6 @@ var getAllActors = async () => {
 		ON e._id = a.eventid
 		GROUP BY a.login `);
 
-		// console.log(actors);
 		const allActors = actors.map((events) => ({
 			count: events.count,
 			actor: {
@@ -97,9 +91,7 @@ var getAllActors = async () => {
 			created_at: events.created_at
 		}));
 
-		// console.log(allActors);
 		const sortedActors = sorting(allActors);
-		// console.log('sorted', sortedActors);
 		return [ ...sortedActors.map((actor) => actor.actor) ];
 	} catch (error) {
 		return { error: 'couldnt access data' };
@@ -139,7 +131,8 @@ var getStreak = async () => {
 		console.log('data', datr);
 
 		const unique = getStreakDistro(datr);
-		return sorting(unique);
+		console.log('this is unique', unique);
+		return sorting(unique).map((act) => act.actor);
 	} catch (error) {
 		console.log(error);
 	}
