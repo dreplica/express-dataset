@@ -13,49 +13,57 @@ const resolver = (check, data = [], error = 'not available') =>
 
 const getStreakDistro = (arr) => {
 	const calculateDate = (dateA, dateB) => {
-		const nowAdate = dateA;
-		const nowBdate = Date.now(dateB);
-		if (nowAdate > nowBdate) return nowBdate - nowAdate;
-		return nowAdate - nowBdate;
+		console.log(dateA, dateB);
+		if (dateA > dateB) return dateA - dateB;
+		return dateB - dateA;
 	};
 	//get unuique login
 	const uniqueId = new Set([ ...arr.map((item) => item.login) ]);
 	const uniqueLogin = [ ...uniqueId ];
-
+	const stopper = arr.length - 1;
 
 	//i stopped here, i was trying to get the count and latest date to work
 	const datePack = uniqueLogin.map((login) =>
 		arr.reduce(
-			(acc, val) => {
+			(acc, val, index) => {
+				if (acc.count && val.login === login) {
+					acc.count = calculateDate(acc.count, new Date(val.created_at).getTime());
+					acc.created_at = [ acc.created_at, val.created_at ].sort((initial, later) => {
+						if (new Date(initial).getTime() > new Date(later).getTime()) return -1;
+						return 1;
+					})[0];
+				}
+
+				if (acc.count > 10000000000 && index === stopper) {
+					('hello');
+					acc.count = 1;
+				}
+
 				if (val.login === login && !acc.count) {
 					console.log('val date', val.created_at);
-					acc.count = Date.now() - Date.now(val.created_at);
-					acc.id = val.id;
-					acc.login = login;
-					acc.avatar_url = val.avatar_url;
+					acc.count = index === stopper ? 1 : new Date(val.created_at).getTime();
+					acc.actor.id = val.id;
+					acc.actor.login = login;
+					acc.actor.avatar_url = val.avatar_url;
 					acc.created_at = val.created_at;
 					console.log('count', acc.count);
 					return acc;
 				}
-				acc.count = calculateDate(acc.count, val.created_at);
-				acc.created_at = [ acc.created_at, val.created_at ].sort((initial, later) => {
-					if (Date.now(initial) > Date.now(later)) return 1;
-					return -1;
-				});
+
 				return acc;
 			},
-			{ count: 0, id: 0, login: '', avatar_url: '', created_at: '' }
+			{ count: 0, actor: { id: 0, login: '', avatar_url: '' }, created_at: '' }
 		)
 	);
 
-	return datePack;
+	return sorting(datePack) ;
 };
 
 const sorting = (arr) => {
 	return [ ...arr ].sort((a, b) => {
 		if (b.count - a.count === 0) {
 			console.log('same id');
-			if (Date.now(b.created_at) - Date.now(a.created_at) === 0) {
+			if (new Date(b.created_at).getTime() - new Date(a.created_at).getTime() === 0) {
 				console.log('same date');
 				if (b.actor.login - a.actor.login > 0) return -1;
 				else return 1;
@@ -126,11 +134,10 @@ var getStreak = async () => {
 		console.log(await resolver('SELECT date("now")'));
 		const datr = await resolver(`
 		SELECT e.created_at, a.login,a.id,a.avatar_url
-		FROM events e
-		JOIN actor a
-		ON e._id = a.eventid
-		GROUP BY a.login`);
-		console.log(datr);
+		FROM actor a
+		JOIN events e
+		ON e._id = a.eventid`);
+		console.log('data', datr);
 		const unique = getStreakDistro(datr);
 		console.log('this is uniques', unique);
 	} catch (error) {
