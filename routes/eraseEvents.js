@@ -8,7 +8,7 @@ router.delete("/", (req, res) => {
         eraseEvents();
         return res.status(200).json({})  
     } catch (error) {
-        return res
+        return res.status(400).json({})
     }
 })
 

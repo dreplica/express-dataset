@@ -5,7 +5,6 @@ var router = express.Router();
 // Routes related to event
 router.get('/', async (req, res) => {
 	const get_db = await getAllEvents();
-	console.log('this is get_db', get_db);
 	res.statusCode = 200;
 	return res.status(200).json(get_db);
 });
@@ -26,7 +25,7 @@ router.post('/', (req, res) => {
 	addEvent(req.body)
 		.then(({ message, code }) => {
 			res.statusCode = code;
-			return res.status(code).send(message);
+			return res.status(code).json({});
 		})
 		.catch(({ error, code }) => {
 			res.statusCode = code;

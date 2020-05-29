@@ -32,13 +32,10 @@ var getAllActors = async () => {
 		SELECT 
 		e.id, e.type,e.created_at, 
 		a.id as actorid,a.login,a.avatar_url,
-		r.id as repoid,r.name,r.url,
 		COUNT(login) as count
 		FROM actor a
 		JOIN events e
 		ON e._id = a.eventid
-		JOIN repo r
-		ON r.eventid = e._id
 		GROUP BY a.login `);
 
 		// console.log(actors);
@@ -51,18 +48,13 @@ var getAllActors = async () => {
 				login: events.login,
 				avatar_url: events.avatar_url
 			},
-			repo: {
-				id: events.repoid,
-				name: events.name,
-				url: events.url
-			},
 			created_at: events.created_at
 		}));
 
 		// console.log(allActors);
 		const sortedActors = sorting(allActors);
 		// console.log('sorted', sortedActors);
-		return [...sortedActors.map((actor) => actor.actor)];
+		return [ ...sortedActors.map((actor) => actor.actor) ];
 	} catch (error) {
 		return { error: 'couldnt access data' };
 	}
@@ -83,7 +75,7 @@ var updateActor = (body) => {
 					body.avatar_url,
 					body.id
 				]);
-				return resolve([]);
+				return resolve({});
 			} catch (error) {
 				return reject({ error: 'actor is being updated', code: 400 });
 			}
@@ -93,25 +85,16 @@ var updateActor = (body) => {
 
 var getStreak = async () => {
 	try {
-		const actors = await resolver(`
-		SELECT e.id as eventid,a.id as id, a.login as login, 
-		a.avatar_url as avatar_url
-		FROM actor a
-		INNER JOIN events e
-		ON a.eventId=e.id`);
-
-		const sorted = [ ...actors ].sort((a, b) => b.eventid - a.eventid);
-		const actorsResult = sorted.map((item) => ({
-			id: item.id,
-			login: item.login,
-			avatar_url: item.avatar_url
-		}));
-
-		console.log(actors);
-		console.log(actorsResult);
-		return actorsResult;
+		console.log(await resolver('SELECT date("now")'));
+		const datr = await resolver(`
+		SELECT a.login, SUM(strftime('%s', e.created_at) - strftime('%s', '00:00:00')) as count
+		FROM events e
+		JOIN actor a
+		ON e._id = a.eventid
+		GROUP BY a.login`);
+		console.log(datr);
 	} catch (error) {
-		return { error: 'couldnt access data' };
+		console.log(error);
 	}
 };
 
