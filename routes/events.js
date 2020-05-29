@@ -21,7 +21,6 @@ router.get('/actors/:id', async (req, res) => {
 });
 
 router.post('/', (req, res) => {
-	console.log(req.body);
 	addEvent(req.body)
 		.then(({ message, code }) => {
 			res.statusCode = code;

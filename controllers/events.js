@@ -2,10 +2,8 @@ const db = require('../model/sqlite3setup');
 
 const resolver = (check, error = 'not available') =>
 	new Promise((resolve, reject) => {
-		console.log(check);
 		db.all(check, (err, row) => {
 			if (err) {
-				console.log(err);
 				return reject({ error: error });
 			}
 			return resolve(row);
@@ -59,7 +57,6 @@ var getAllEvents = () => {
 };
 
 var addEvent = (body) => {
-	console.log('afa baba');
 	return new Promise((resolve, reject) => {
 		db.serialize(async function() {
 			try {
@@ -74,18 +71,14 @@ var addEvent = (body) => {
 					});
 
 				const checkResult = await check();
-				console.log('it checked');
 				if (checkResult) {
 					return reject({ error: 'event already exist', code: 400 });
 				}
-				console.log('passed checkpoint');
 				db.all(
 					`INSERT INTO events VALUES(NULL,$id,$type,$created_at)`,
 					[ Number(body.id), body.type, body.created_at ],
 					(err, row) => {
-						console.log('wasup');
 						resolver(`SELECT last_insert_rowid() FROM events`).then((res) => {
-							console.log(res);
 							db.each(`INSERT INTO actor VALUES(NULL,$id,$eid,$login,$url)`, [
 								Number(body.actor.id),
 								Number(res[0]['last_insert_rowid()']),
@@ -158,9 +151,7 @@ var getByActor = (id) => {
 
 var eraseEvents = () => {
 	db.serialize(async function() {
-		const erase = await resolver(`DELETE FROM  events`);
-		const test = await resolver('SELECT * FROM actor');
-		console.log(test);
+		 await resolver(`DELETE FROM  events`);
 	});
 };
 
