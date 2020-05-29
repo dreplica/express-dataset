@@ -11,6 +11,46 @@ const resolver = (check, data = [], error = 'not available') =>
 		});
 	});
 
+const getStreakDistro = (arr) => {
+	const calculateDate = (dateA, dateB) => {
+		const nowAdate = dateA;
+		const nowBdate = Date.now(dateB);
+		if (nowAdate > nowBdate) return nowBdate - nowAdate;
+		return nowAdate - nowBdate;
+	};
+	//get unuique login
+	const uniqueId = new Set([ ...arr.map((item) => item.login) ]);
+	const uniqueLogin = [ ...uniqueId ];
+
+
+	//i stopped here, i was trying to get the count and latest date to work
+	const datePack = uniqueLogin.map((login) =>
+		arr.reduce(
+			(acc, val) => {
+				if (val.login === login && !acc.count) {
+					console.log('val date', val.created_at);
+					acc.count = Date.now() - Date.now(val.created_at);
+					acc.id = val.id;
+					acc.login = login;
+					acc.avatar_url = val.avatar_url;
+					acc.created_at = val.created_at;
+					console.log('count', acc.count);
+					return acc;
+				}
+				acc.count = calculateDate(acc.count, val.created_at);
+				acc.created_at = [ acc.created_at, val.created_at ].sort((initial, later) => {
+					if (Date.now(initial) > Date.now(later)) return 1;
+					return -1;
+				});
+				return acc;
+			},
+			{ count: 0, id: 0, login: '', avatar_url: '', created_at: '' }
+		)
+	);
+
+	return datePack;
+};
+
 const sorting = (arr) => {
 	return [ ...arr ].sort((a, b) => {
 		if (b.count - a.count === 0) {
@@ -91,6 +131,8 @@ var getStreak = async () => {
 		ON e._id = a.eventid
 		GROUP BY a.login`);
 		console.log(datr);
+		const unique = getStreakDistro(datr);
+		console.log('this is uniques', unique);
 	} catch (error) {
 		console.log(error);
 	}

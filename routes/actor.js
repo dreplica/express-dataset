@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/streak', async (req, res) => {
-	const result = await getAllActors();
+	const result = await getStreak();
 	return res.status(200).json(result);
 });
 
