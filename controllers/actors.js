@@ -56,20 +56,20 @@ const getStreakDistro = (arr) => {
 		)
 	);
 
-	return sorting(datePack) ;
+	return datePack;
 };
 
 const sorting = (arr) => {
 	return [ ...arr ].sort((a, b) => {
 		if (b.count - a.count === 0) {
-			console.log('same id');
+			console.log('same count');
 			if (new Date(b.created_at).getTime() - new Date(a.created_at).getTime() === 0) {
 				console.log('same date');
 				if (b.actor.login - a.actor.login > 0) return -1;
 				else return 1;
-			} else if (Date.now(b.created_at) - Date.now(a.created_at) > 0) return 1;
-			else return -1;
-		} else if (b.id - a.id > 0) return 1;
+			} else if (Date.now(b.created_at) - Date.now(a.created_at) > 0) return -1;
+			else return 1;
+		} else if (b.count - a.count > 0) return 1;
 		else return -1;
 	});
 };
@@ -131,15 +131,15 @@ var updateActor = (body) => {
 
 var getStreak = async () => {
 	try {
-		console.log(await resolver('SELECT date("now")'));
 		const datr = await resolver(`
 		SELECT e.created_at, a.login,a.id,a.avatar_url
 		FROM actor a
 		JOIN events e
 		ON e._id = a.eventid`);
 		console.log('data', datr);
+
 		const unique = getStreakDistro(datr);
-		console.log('this is uniques', unique);
+		return sorting(unique);
 	} catch (error) {
 		console.log(error);
 	}
