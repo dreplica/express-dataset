@@ -30,7 +30,7 @@ var getAllActors = async () => {
 	try {
 		const actors = await resolver(`
 		SELECT 
-		e.id, e.type,e.created_at, 
+		e.created_at, 
 		a.id as actorid,a.login,a.avatar_url,
 		COUNT(login) as count
 		FROM actor a
@@ -40,9 +40,7 @@ var getAllActors = async () => {
 
 		// console.log(actors);
 		const allActors = actors.map((events) => ({
-			id: events.id,
 			count: events.count,
-			type: events.type,
 			actor: {
 				id: events.actorid,
 				login: events.login,
@@ -87,7 +85,7 @@ var getStreak = async () => {
 	try {
 		console.log(await resolver('SELECT date("now")'));
 		const datr = await resolver(`
-		SELECT a.login, SUM(strftime('%s', e.created_at) - strftime('%s', '00:00:00')) as count
+		SELECT e.created_at, a.login,a.id,a.avatar_url
 		FROM events e
 		JOIN actor a
 		ON e._id = a.eventid
